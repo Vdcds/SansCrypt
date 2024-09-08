@@ -1,113 +1,139 @@
-import Image from "next/image";
+"use client"
+import React, { useState, useEffect } from 'react';
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Lock, RefreshCw, Info, Shield, Key } from 'lucide-react';
+import { motion } from 'framer-motion';
+
+const sanskritWords = [
+  "Chaya", "Daya", "Dvesha", "Dhairya", "Ekam", "Ghar", "Gurukulam",
+  "Hridaya", "Hita", "Indriya", "Jala", "Kala", "Kamala", "Kanya",
+  "Lajja", "Loka", "Madhura", "Maitri", "Manasa", "Mitra",
+  "Namaste", "Nidra", "Paani", "Parivara", "Pranaama", "Priya",
+  "Raksha", "Rasa", "Sahasra", "Sadhana", "Sandhya", "Shakti",
+  "Shraddha", "Sneha", "Suvarna", "Tapa", "Tirtha", "Ushas",
+  "Vana", "Vastra", "Vayu", "Vidya", "Vrata", "Yajna", "Yatra",
+  "Yukti", "Yuga", "Artha", "Chitta", "Deva"
+];
 
 export default function Home() {
+  const [password, setPassword] = useState("");
+  const [passphrase, setPassphrase] = useState("");
+  const [showAlert, setShowAlert] = useState(false);
+  const [strength, setStrength] = useState(0);
+
+  useEffect(() => {
+    // Simple password strength checker
+    const checkStrength = (pass) => {
+      let score = 0;
+      if (pass.length > 6) score++;
+      if (pass.length > 10) score++;
+      if (/[A-Z]/.test(pass)) score++;
+      if (/[0-9]/.test(pass)) score++;
+      if (/[^A-Za-z0-9]/.test(pass)) score++;
+      setStrength(score);
+    };
+
+    checkStrength(password);
+  }, [password]);
+
+  const generatePassphrase = () => {
+    const randomWord = sanskritWords[Math.floor(Math.random() * sanskritWords.length)];
+    const randomWord2 = sanskritWords[Math.floor(Math.random() * sanskritWords.length)];
+    const newPassphrase = randomWord + password + randomWord2;
+    setPassphrase(newPassphrase);
+    setShowAlert(true);
+
+    // Clear the alert after 10 seconds
+    setTimeout(() => setShowAlert(false), 10000);
+  };
+
+  const handleKeyPress = (e) => {
+    if (e.key === 'Enter') {
+      generatePassphrase();
+    }
+  };
+
   return (
-    <main className="flex min-h-screen flex-col items-center justify-between p-24">
-      <div className="z-10 max-w-5xl w-full items-center justify-between font-mono text-sm lg:flex">
-        <p className="fixed left-0 top-0 flex w-full justify-center border-b border-gray-300 bg-gradient-to-b from-zinc-200 pb-6 pt-8 backdrop-blur-2xl dark:border-neutral-800 dark:bg-zinc-800/30 dark:from-inherit lg:static lg:w-auto  lg:rounded-xl lg:border lg:bg-gray-200 lg:p-4 lg:dark:bg-zinc-800/30">
-          Get started by editing&nbsp;
-          <code className="font-mono font-bold">src/app/page.js</code>
-        </p>
-        <div className="fixed bottom-0 left-0 flex h-48 w-full items-end justify-center bg-gradient-to-t from-white via-white dark:from-black dark:via-black lg:static lg:h-auto lg:w-auto lg:bg-none">
-          <a
-            className="pointer-events-none flex place-items-center gap-2 p-8 lg:pointer-events-auto lg:p-0"
-            href="https://vercel.com?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            By{" "}
-            <Image
-              src="/vercel.svg"
-              alt="Vercel Logo"
-              className="dark:invert"
-              width={100}
-              height={24}
-              priority
+    <div className="min-h-screen bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center p-4">
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5 }}
+        className="bg-white rounded-lg shadow-xl p-8 w-full max-w-xl"
+      >
+        <h1 className="text-4xl font-bold text-center text-gray-800 mb-6">SansCrypt</h1>
+        <p className="text-center text-gray-600 mb-6">Enhance your password security with Sanskrit-inspired encryption</p>
+
+        <div className="space-y-4">
+          <div className="relative">
+            <Input
+              type="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              onKeyPress={handleKeyPress}
+              placeholder="Enter your password"
+              className="w-full pr-10"
             />
-          </a>
+            <Key className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+          </div>
+
+          <div className="h-2 w-full bg-gray-200 rounded-full">
+            <div
+              className={`h-full rounded-full transition-all duration-300 ${strength === 0 ? 'w-0' :
+                strength === 1 ? 'w-1/5 bg-red-500' :
+                  strength === 2 ? 'w-2/5 bg-orange-500' :
+                    strength === 3 ? 'w-3/5 bg-yellow-500' :
+                      strength === 4 ? 'w-4/5 bg-lime-500' :
+                        'w-full bg-green-500'
+                }`}
+            />
+          </div>
+          <p className="text-sm text-gray-600 text-center">Password strength: {
+            strength === 0 ? 'Very Weak' :
+              strength === 1 ? 'Weak' :
+                strength === 2 ? 'Fair' :
+                  strength === 3 ? 'Good' :
+                    strength === 4 ? 'Strong' :
+                      'Very Strong'
+          }</p>
+
+          <Button
+            onClick={generatePassphrase}
+            className="w-full bg-indigo-600 hover:bg-indigo-700 transition-colors"
+          >
+            <Lock className="mr-2 h-4 w-4" /> Encrypt
+          </Button>
+
+          {showAlert && (
+            <Alert variant="default" className="mt-4">
+              <AlertDescription className="font-mono break-all">
+                Your passphrase: {passphrase}
+              </AlertDescription>
+            </Alert>
+          )}
         </div>
-      </div>
 
-      <div className="relative flex place-items-center before:absolute before:h-[300px] before:w-full sm:before:w-[480px] before:-translate-x-1/2 before:rounded-full before:bg-gradient-radial before:from-white before:to-transparent before:blur-2xl before:content-[''] after:absolute after:-z-20 after:h-[180px] after:w-full sm:after:w-[240px] after:translate-x-1/3 after:bg-gradient-conic after:from-sky-200 after:via-blue-200 after:blur-2xl after:content-[''] before:dark:bg-gradient-to-br before:dark:from-transparent before:dark:to-blue-700 before:dark:opacity-10 after:dark:from-sky-900 after:dark:via-[#0141ff] after:dark:opacity-40 before:lg:h-[360px] z-[-1]">
-        <Image
-          className="relative dark:drop-shadow-[0_0_0.3rem_#ffffff70] dark:invert"
-          src="/next.svg"
-          alt="Next.js Logo"
-          width={180}
-          height={37}
-          priority
-        />
-      </div>
-
-      <div className="mb-32 grid text-center lg:max-w-5xl lg:w-full lg:mb-0 lg:grid-cols-4 lg:text-left">
-        <a
-          href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className="group rounded-lg border border-transparent px-5 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100 hover:dark:border-neutral-700 hover:dark:bg-neutral-800/30"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2 className={`mb-3 text-2xl font-semibold`}>
-            Docs{" "}
-            <span className="inline-block transition-transform group-hover:translate-x-1 motion-reduce:transform-none">
-              -&gt;
-            </span>
+        <div className="mt-8 bg-gray-100 p-4 rounded-lg">
+          <h2 className="text-xl font-semibold mb-2 flex items-center text-black">
+            <Info className="mr-2 text-black" /> How it works
           </h2>
-          <p className={`m-0 max-w-[30ch] text-sm opacity-50`}>
-            Find in-depth information about Next.js features and API.
+          <p className="text-sm text-gray-700">
+            SansCrypt combines your password with a randomly selected Sanskrit word to create a unique and robust passphrase. This adds an extra layer of security to your existing password.
           </p>
-        </a>
+        </div>
 
-        <a
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          className="group rounded-lg border border-transparent px-5 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100 hover:dark:border-neutral-700 hover:dark:bg-neutral-800 hover:dark:bg-opacity-30"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2 className={`mb-3 text-2xl font-semibold`}>
-            Learn{" "}
-            <span className="inline-block transition-transform group-hover:translate-x-1 motion-reduce:transform-none">
-              -&gt;
-            </span>
-          </h2>
-          <p className={`m-0 max-w-[30ch] text-sm opacity-50`}>
-            Learn about Next.js in an interactive course with&nbsp;quizzes!
-          </p>
-        </a>
+        <div className="mt-4 flex justify-center space-x-4">
+          <Shield className="text-indigo-600" />
+          <RefreshCw className="text-indigo-600" />
+          <Lock className="text-indigo-600" />
+        </div>
 
-        <a
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className="group rounded-lg border border-transparent px-5 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100 hover:dark:border-neutral-700 hover:dark:bg-neutral-800/30"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2 className={`mb-3 text-2xl font-semibold`}>
-            Templates{" "}
-            <span className="inline-block transition-transform group-hover:translate-x-1 motion-reduce:transform-none">
-              -&gt;
-            </span>
-          </h2>
-          <p className={`m-0 max-w-[30ch] text-sm opacity-50`}>
-            Explore starter templates for Next.js.
-          </p>
-        </a>
-
-        <a
-          href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className="group rounded-lg border border-transparent px-5 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100 hover:dark:border-neutral-700 hover:dark:bg-neutral-800/30"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2 className={`mb-3 text-2xl font-semibold`}>
-            Deploy{" "}
-            <span className="inline-block transition-transform group-hover:translate-x-1 motion-reduce:transform-none">
-              -&gt;
-            </span>
-          </h2>
-          <p className={`m-0 max-w-[30ch] text-sm opacity-50 text-balance`}>
-            Instantly deploy your Next.js site to a shareable URL with Vercel.
-          </p>
-        </a>
-      </div>
-    </main>
+        <p className="mt-4 text-xs text-gray-500 text-center">
+          Note: Always use strong, unique passwords for each of your accounts. SansCrypt is an additional layer of security, not a replacement for good password practices.
+        </p>
+      </motion.div>
+    </div>
   );
 }
